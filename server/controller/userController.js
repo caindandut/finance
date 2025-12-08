@@ -7,7 +7,18 @@ const AppError = require('../utils/appError');
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  res.send('Register Route');
+ // ... trong hàm registerUser
+const { name, email, password } = req.body;
+
+if (!name || !email || !password) {
+  throw new AppError('Please add all fields', 400);
+}
+
+// Check if user exists
+const userExists = await User.findOne({ email });
+if (userExists) {
+  throw new AppError('User already exists', 400);
+}
 });
 
 // @desc    Authenticate user & get token
