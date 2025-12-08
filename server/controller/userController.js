@@ -43,7 +43,24 @@ if (user) {
 // @route   POST /api/users/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-   res.send('Login Route');
+   const authUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Check for user email
+  const user = await User.findOne({ email });
+
+  // user.matchPassword là method ta đã viết ở Model ngày hôm qua
+  if (user && (await user.matchPassword(password))) {
+    res.json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    throw new AppError('Invalid email or password', 401);
+  }
+});
 });
 
 // @desc    Get user profile
