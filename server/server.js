@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db.js');
-
+const userRoutes = require('./routes/userRoutes');
 connectDB();
 const app = express();
 
@@ -16,6 +16,7 @@ app.use(helmet());
 app.use(morgan('dev'));
 
 app.use(express.json());
+app.use('/api/users', userRoutes);
 
 app.get('/error', (req, res, next) => {
     const error = new Error('Test Error Middleware');
