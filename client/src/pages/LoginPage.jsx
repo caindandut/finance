@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import useAuthStore from "@/store/useAuthStore";
 
 export const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -15,6 +18,10 @@ export const loginSchema = z.object({
 });
 
 const LoginPage = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
+
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -23,9 +30,22 @@ const LoginPage = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    // sẽ nối vào store ở bước tiếp theo
-    console.log("login submit", data);
+  const onSubmit = async (values) => {
+    try {
+      await login(values);
+      toast({
+        title: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay lại!",
+      });
+      navigate("/");
+    } catch (error) {
+      const message = error.response?.data?.message || "Đăng nhập thất bại";
+      toast({
+        title: "Có lỗi xảy ra",
+        description: message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
