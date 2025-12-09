@@ -1,10 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import useAuthStore from "@/store/useAuthStore";
 
 export const registerSchema = z
   .object({
@@ -19,6 +24,38 @@ export const registerSchema = z
   });
 
 const RegisterPage = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const registerUser = useAuthStore((state) => state.register);
+
+  const form = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (values) => {
+    try {
+      await registerUser(values);
+      toast({
+        title: "Đăng ký thành công",
+        description: "Hãy bắt đầu quản lý tài chính của bạn!",
+      });
+      navigate("/");
+    } catch (error) {
+      const message = error.response?.data?.message || "Đăng ký thất bại";
+      toast({
+        title: "Có lỗi xảy ra",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -27,31 +64,69 @@ const RegisterPage = () => {
       </CardHeader>
 
       <CardContent>
-        <form className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Họ và tên</Label>
-            <Input id="name" type="text" placeholder="Nguyễn Văn A" />
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Họ và tên</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Nguyễn Văn A" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" />
-          </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
-            <Input id="password" type="password" placeholder="••••••••" />
-          </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mật khẩu</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
-            <Input id="confirmPassword" type="password" placeholder="••••••••" />
-          </div>
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Xác nhận mật khẩu</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <Button type="button" className="w-full">
-            Đăng ký
-          </Button>
-        </form>
+            <Button type="submit" className="w-full">
+              Đăng ký
+            </Button>
+          </form>
+        </Form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Đã có tài khoản?{" "}
